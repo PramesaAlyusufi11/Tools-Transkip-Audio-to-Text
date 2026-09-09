@@ -11,4 +11,3 @@ To use:
 
 (PS: Do not move this android project folder individually to other folders, because this android project folder depends on the files of the whole project.)
 
-<img width="300" alt="image" src="https://user-images.githubusercontent.com/1670775/221613663-a17bf770-27ef-45ab-9a46-a5f99ba65d2a.jpg">
