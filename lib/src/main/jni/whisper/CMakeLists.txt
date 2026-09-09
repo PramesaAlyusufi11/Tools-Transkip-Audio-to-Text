@@ -19,12 +19,19 @@ include(FetchContent)
 # Fix: fetch the whisper.cpp core source directly, so the build no longer
 # depends on the surrounding folder structure - works the same locally and
 # in GitHub Actions.
+#
+# IMPORTANT: use FetchContent_Populate (download only), NOT
+# FetchContent_MakeAvailable. MakeAvailable would also run whisper.cpp's own
+# top-level CMakeLists.txt as a subproject (add_subdirectory), which already
+# defines the ggml/whisper targets - clashing with build_library() below,
+# which defines those same targets itself. Populate just gives us the raw
+# source tree, exactly like the original relative-path approach did.
 FetchContent_Declare(
     whispercpp_core
     GIT_REPOSITORY https://github.com/ggml-org/whisper.cpp.git
     GIT_TAG        v1.9.2   # bump this whenever you want a newer whisper.cpp
 )
-FetchContent_MakeAvailable(whispercpp_core)
+FetchContent_Populate(whispercpp_core)
 set(WHISPER_LIB_DIR ${whispercpp_core_SOURCE_DIR})
 # ---------------------------------------------------------------------------
 
