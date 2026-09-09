@@ -3,7 +3,30 @@ cmake_minimum_required(VERSION 3.10)
 project(whisper.cpp)
 
 set(CMAKE_CXX_STANDARD 17)
-set(WHISPER_LIB_DIR ${CMAKE_SOURCE_DIR}/../../../../../../..)
+
+include(FetchContent)
+
+# --- FIX -----------------------------------------------------------------
+# The original template assumed this file lives 7 folders deep INSIDE a full
+# clone of ggerganov/whisper.cpp (examples/whisper.android/lib/src/main/jni/whisper/),
+# so it just walked ".." seven times to reach the whisper.cpp source root.
+#
+# This repo only contains the Android app (flat structure), not the actual
+# whisper.cpp / ggml C++ sources, so that relative path pointed outside the
+# repo entirely and failed in CI (it worked locally only because your local
+# checkout happened to sit inside a full whisper.cpp clone).
+#
+# Fix: fetch the whisper.cpp core source directly, so the build no longer
+# depends on the surrounding folder structure - works the same locally and
+# in GitHub Actions.
+FetchContent_Declare(
+    whispercpp_core
+    GIT_REPOSITORY https://github.com/ggml-org/whisper.cpp.git
+    GIT_TAG        v1.9.2   # bump this whenever you want a newer whisper.cpp
+)
+FetchContent_MakeAvailable(whispercpp_core)
+set(WHISPER_LIB_DIR ${whispercpp_core_SOURCE_DIR})
+# ---------------------------------------------------------------------------
 
 # Get whisper.cpp version
 file(READ "${WHISPER_LIB_DIR}/CMakeLists.txt" MAIN_CMAKE_CONTENT)
@@ -26,8 +49,6 @@ set(
     )
 
 find_library(LOG_LIB log)
-
-include(FetchContent)
 
 function(build_library target_name)
     add_library(
@@ -83,4 +104,3 @@ include_directories(${WHISPER_LIB_DIR}/include)
 include_directories(${WHISPER_LIB_DIR}/ggml/include)
 include_directories(${WHISPER_LIB_DIR}/ggml/src)
 include_directories(${WHISPER_LIB_DIR}/ggml/src/ggml-cpu)
-
